@@ -1,0 +1,73 @@
+FILE: Main.kt
+    @R|love/forte/plugin/suspendtrans/annotation/JvmBlocking|() @R|love/forte/plugin/suspendtrans/annotation/JvmAsync|() public abstract interface IFoo : R|kotlin/Any| {
+        @R|kotlin/jvm/JvmSynthetic|() public abstract suspend fun run(n: R|kotlin/Int|): R|Bar|
+
+        @R|love/forte/plugin/suspendtrans/annotation/Api4J|() public open fun runAsync(n: R|kotlin/Int|): R|java/util/concurrent/CompletableFuture<out Bar>| {
+            ^runAsync R|love/forte/plugin/suspendtrans/runtime/$runInAsync$|(suspend fun <anonymous>(): R|Bar| <inline=Unknown>  {
+                ^ this@R|/IFoo|.R|/IFoo.run|(R|<local>/n|)
+            }
+            , (this@R|/IFoo| as? R|kotlinx/coroutines/CoroutineScope|))
+        }
+
+        @R|love/forte/plugin/suspendtrans/annotation/Api4J|() public open fun runBlocking(n: R|kotlin/Int|): R|Bar| {
+            ^runBlocking R|love/forte/plugin/suspendtrans/runtime/$runInBlocking$|(suspend fun <anonymous>(): R|Bar| <inline=Unknown>  {
+                ^ this@R|/IFoo|.R|/IFoo.run|(R|<local>/n|)
+            }
+            )
+        }
+
+    }
+    public abstract interface Foo : R|IFoo| {
+        @R|love/forte/plugin/suspendtrans/annotation/JvmBlocking|() @R|love/forte/plugin/suspendtrans/annotation/JvmAsync|() @R|kotlin/jvm/JvmSynthetic|() public abstract suspend fun run(): R|Bar|
+
+        public open suspend fun run(name: R|kotlin/String|): R|Tar| {
+            ^run R|/Tar.Tar|()
+        }
+
+        public abstract override suspend fun run(n: R|kotlin/Int|): R|Bar|
+
+        @R|love/forte/plugin/suspendtrans/annotation/Api4J|() public open fun runAsync(): R|java/util/concurrent/CompletableFuture<out Bar>| {
+            ^runAsync R|love/forte/plugin/suspendtrans/runtime/$runInAsync$|(suspend fun <anonymous>(): R|Bar| <inline=Unknown>  {
+                ^ this@R|/Foo|.R|/Foo.run|()
+            }
+            , (this@R|/Foo| as? R|kotlinx/coroutines/CoroutineScope|))
+        }
+
+        @R|love/forte/plugin/suspendtrans/annotation/Api4J|() public open fun runBlocking(): R|Bar| {
+            ^runBlocking R|love/forte/plugin/suspendtrans/runtime/$runInBlocking$|(suspend fun <anonymous>(): R|Bar| <inline=Unknown>  {
+                ^ this@R|/Foo|.R|/Foo.run|()
+            }
+            )
+        }
+
+    }
+    public final class FooImpl : R|Foo| {
+        public constructor(): R|FooImpl| {
+            super<R|kotlin/Any|>()
+        }
+
+        public open override suspend fun run(): R|Tar| {
+            ^run R|/Tar.Tar|()
+        }
+
+        public open override suspend fun run(name: R|kotlin/String|): R|Tar| {
+            ^run R|/Tar.Tar|()
+        }
+
+        public open override suspend fun run(n: R|kotlin/Int|): R|Bar| {
+            ^run R|/Tar.Tar|()
+        }
+
+    }
+    public open class Bar : R|kotlin/Any| {
+        public constructor(): R|Bar| {
+            super<R|kotlin/Any|>()
+        }
+
+    }
+    public final class Tar : R|Bar| {
+        public constructor(): R|Tar| {
+            super<R|Bar|>()
+        }
+
+    }

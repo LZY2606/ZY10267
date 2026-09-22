@@ -1,0 +1,232 @@
+/*
+ * Copyright (c) 2022-2025 Forte Scarlet
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package love.forte.plugin.suspendtrans.utils
+
+import love.forte.plugin.suspendtrans.valueParameters0
+import org.jetbrains.kotlin.backend.common.descriptors.synthesizedName
+import org.jetbrains.kotlin.backend.common.extensions.IrPluginContext
+import org.jetbrains.kotlin.backend.jvm.ir.fileParent
+import org.jetbrains.kotlin.descriptors.ClassKind
+import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
+import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.ir.builders.*
+import org.jetbrains.kotlin.ir.builders.declarations.*
+import org.jetbrains.kotlin.ir.declarations.*
+import org.jetbrains.kotlin.ir.declarations.impl.IrFactoryImpl
+import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.IrFunctionAccessExpression
+import org.jetbrains.kotlin.ir.expressions.impl.IrGetFieldImpl
+import org.jetbrains.kotlin.ir.types.IrSimpleType
+import org.jetbrains.kotlin.ir.types.getClass
+import org.jetbrains.kotlin.ir.types.typeOrNull
+import org.jetbrains.kotlin.ir.util.*
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.name.SpecialNames
+import java.util.*
+
+fun IrSimpleFunction.asProperty(): IrProperty {
+    val baseFunction = this
+    val parentClassOrFile = baseFunction.parentClassOrNull ?: baseFunction.fileParent
+    val property = IrFactoryImpl.buildProperty {
+        updateFrom(baseFunction)
+        name = baseFunction.name
+        startOffset = baseFunction.startOffset
+        endOffset = baseFunction.endOffset
+        origin = IrDeclarationOrigin.DEFINED
+        returnType = originalFunction.returnType
+        modality = parentClassOrFile.computeModality(baseFunction)
+        visibility = if (parentClassOrFile.isInterface) DescriptorVisibilities.PUBLIC
+        else baseFunction.visibility
+        isExternal = false
+        isExpect = false
+        isVar = false
+        isConst = false
+    }.apply {
+        this.copyAttributes(baseFunction)
+        parent = parentClassOrFile
+        getter = baseFunction
+    }
+
+    return property
+}
+
+
+/**
+ * Generates an anonymous object.
+ *
+ * - extends `suspend () -> Unit`.
+ * - takes dispatch and extension receivers as param, followed by normal value params, to the constructor of this object
+ */
+fun IrPluginContext.createSuspendLambdaWithCoroutineScope(
+    parent: IrDeclarationParent,
+    lambdaType: IrSimpleType,
+    originFunction: IrFunction,
+): IrClass {
+    return irFactory.buildClass {
+        name = SpecialNames.NO_NAME_PROVIDED
+        kind = ClassKind.CLASS
+        /*
+            Those three lines are required, especially `visibility` and `isInner`
+            All the local classes should have it
+
+            see https://youtrack.jetbrains.com/issue/KT-53993/IR-kotlin.NotImplementedError-An-operation-is-not-implemented-IrClassImpl-is-not-supported-yet-here#focus=Comments-27-8622204.0-0
+        */
+
+        isFun = true
+        //isInner = true
+        visibility = DescriptorVisibilities.LOCAL
+    }.apply clazz@{
+        this.parent = parent
+        superTypes = listOf(lambdaType)
+
+        val fields = originFunction.paramsAndReceiversAsParamsList().map {
+            addField(it.name.identifierOrMappedSpecialName.synthesizedName, it.type)
+        }
+
+        // createImplicitParameterDeclarationWithWrappedDescriptor()
+        createThisReceiverParameter()
+
+        addConstructor {
+            isPrimary = true
+        }.apply constructor@{
+            val newParams = fields.associateWith { irField ->
+                this@constructor.addValueParameter {
+                    name = irField.name
+                    type = irField.type
+                }
+            }
+
+            this@constructor.body = createIrBuilder(symbol).irBlockBody {
+                +irDelegatingConstructorCall(context.irBuiltIns.anyClass.owner.constructors.single())
+
+                for ((irField, irValueParam) in newParams) {
+                    +irSetField(irGet(this@clazz.thisReceiver!!), irField, irGet(irValueParam))
+                }
+
+
+            }
+        }
+
+        addFunction("invoke", lambdaType.arguments.last().typeOrNull!!, isSuspend = true).apply functionInvoke@{
+            this.overriddenSymbols =
+//                listOf(irClass.superTypes[0].getClass()!!.functionsSequence.single { it.name.identifier == "invoke" && it.isOverridable }.symbol)
+                listOf(lambdaType.getClass()!!.functionsSequence.single { it.name.identifier == "invoke" && it.isOverridable }.symbol)
+
+            // this.createDispatchReceiverParameter()
+            this.body = createIrBuilder(symbol).run {
+                // don't use expr body, coroutine codegen can't generate for it.
+                irBlockBody {
+                    +irCall(originFunction).apply call@{
+                        // set arguments
+
+                        val arguments = fields.mapTo(LinkedList()) { it } // preserve order
+
+                        fun IrField.irGetField0(): IrGetFieldImpl {
+                            return irGetField(
+                                receiver = irGet(this@functionInvoke.dispatchReceiverParameter!!),
+                                field = this
+                            )
+                        }
+
+                        if (originFunction.dispatchReceiverParameter != null) {
+                            this@call.dispatchReceiver = arguments.pop().irGetField0()
+                        }
+                        if (originFunction.extensionReceiverParameter0() != null) {
+                            this@call.extensionReceiver0(arguments.pop().irGetField0())
+                        }
+
+                        // this@call.putValueArgument(0, irGet(scopeParam))
+                        for ((index, irField) in arguments.withIndex()) {
+                            this@call.arguments[index] = irField.irGetField0()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fun IrPluginContext.createSuspendLambdaFunctionWithCoroutineScope(
+    originFunction: IrFunction,
+    function: IrFunction
+): IrSimpleFunction {
+    return irFactory.buildFun {
+        origin = IrDeclarationOrigin.LOCAL_FUNCTION_FOR_LAMBDA
+        name = SpecialNames.NO_NAME_PROVIDED
+        visibility = DescriptorVisibilities.LOCAL
+        returnType = function.returnType
+        modality = Modality.FINAL
+        isSuspend = true
+    }.apply {
+        parent = function
+        body = createIrBuilder(symbol).run {
+            // don't use expr body, coroutine codegen can't generate for it.
+            irBlockBody {
+                +irReturn(irCall(originFunction).apply call@{
+                    // set arguments
+                    function.dispatchReceiverParameter?.also {
+                        this@call.dispatchReceiver = irGet(it)
+                    }
+
+                    function.extensionReceiverParameter0()?.also {
+                        this@call.extensionReceiver0(irGet(it))
+                    }
+
+                    for ((index, parameter) in function.valueParameters0().withIndex()) {
+                        this@call.arguments[index] = irGet(parameter)
+                    }
+                })
+            }
+        }
+    }
+}
+
+fun IrFunction.paramsAndReceiversAsParamsList(): List<IrValueParameter> {
+    return buildList {
+        if (!isStatic) {
+            dispatchReceiverParameter?.let(this::add)
+        }
+        extensionReceiverParameter0()?.let(this::add)
+        valueParameters0().let(this::addAll)
+    }
+}
+
+
+val Name.identifierOrMappedSpecialName: String
+    get() {
+        return when (this.asString()) {
+            "<this>" -> "\$receiver" // finally synthesized as
+            else -> this.identifier
+        }
+    }
+
+
+val IrDeclarationContainer.functionsSequence: Sequence<IrSimpleFunction>
+    get() = declarations.asSequence().filterIsInstance<IrSimpleFunction>()
+
+internal fun IrFunction.extensionReceiverParameter0() =
+    parameters.firstOrNull { it.kind == IrParameterKind.ExtensionReceiver }
+
+internal fun IrFunctionAccessExpression.extensionReceiver0(value: IrExpression?) {
+    arguments[symbol.owner.parameters.indexOfFirst { it.kind == IrParameterKind.ExtensionReceiver }] = value
+}
