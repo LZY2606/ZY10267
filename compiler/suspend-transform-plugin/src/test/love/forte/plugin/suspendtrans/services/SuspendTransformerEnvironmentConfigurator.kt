@@ -49,66 +49,45 @@ class SuspendTransformerEnvironmentConfigurator(testServices: TestServices) : En
         configuration.configureJdkClasspathRoots()
 
         // register runtimes
-        getRuntimeJarFile("love.forte.plugin.suspendtrans.runtime.RunInSuspendJvmKt")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
+        for (runtimeJarFile in resolveSuspendTransformRuntimeJars()) {
+            configuration.addJvmClasspathRoot(runtimeJarFile)
         }
-        getRuntimeJarFile("love.forte.plugin.suspendtrans.annotation.JvmAsync")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-        getRuntimeJarFile("love.forte.plugin.suspendtrans.annotation.JvmBlocking")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-        getRuntimeJarFile("love.forte.plugin.suspendtrans.annotation.JvmReactive")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-
-        // register coroutines
-        getRuntimeJarFile("kotlinx.coroutines.CoroutineScope")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-        getRuntimeJarFile("kotlinx.coroutines.reactive.PublishKt")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-        getRuntimeJarFile("org.reactivestreams.Publisher")?.let {
-            configuration.addJvmClasspathRoot(
-                it
-            )
-        }
-    }
-
-    private fun getRuntimeJarFile(className: String): File? {
-        try {
-            return getRuntimeJarFile(Class.forName(className))
-        } catch (_: ClassNotFoundException) {
-            System.err.println("Runtime jar '$className' not found!")
-//            assert(false) { "Runtime jar '$className' not found!" }
-        }
-        return null
-    }
-
-    private fun getRuntimeJarFile(clazz: Class<*>): File {
-//        try {
-        return PathUtil.getResourcePathForClass(clazz)
-//        } catch (e: ClassNotFoundException) {
-//            System.err.println("Runtime jar '$clazz' not found!")
-////            assert(false) { "Runtime jar '$className' not found!" }
-//        }
-//        return null
     }
 
 }
+
+/**
+ * Class names whose containing jars must be present when compiling or running
+ * suspend-transform test samples.
+ */
+private val SUSPEND_TRANSFORM_RUNTIME_CLASS_NAMES: List<String> = listOf(
+    // runtimes
+    "love.forte.plugin.suspendtrans.runtime.RunInSuspendJvmKt",
+    "love.forte.plugin.suspendtrans.annotation.JvmAsync",
+    "love.forte.plugin.suspendtrans.annotation.JvmBlocking",
+    "love.forte.plugin.suspendtrans.annotation.JvmReactive",
+
+    // coroutines
+    "kotlinx.coroutines.CoroutineScope",
+    "kotlinx.coroutines.reactive.PublishKt",
+    "org.reactivestreams.Publisher",
+)
+
+/**
+ * Resolves the jars that have to be on the classpath of test compilations and of
+ * reflectively executed test samples. Shared by the compile-time environment
+ * configurator and the runtime classpath provider used by box-style oracle tests,
+ * so both sides always see the same runtime.
+ */
+internal fun resolveSuspendTransformRuntimeJars(): List<File> =
+    SUSPEND_TRANSFORM_RUNTIME_CLASS_NAMES.mapNotNullTo(mutableListOf()) { className ->
+        try {
+            PathUtil.getResourcePathForClass(Class.forName(className))
+        } catch (_: ClassNotFoundException) {
+            System.err.println("Runtime jar '$className' not found!")
+            null
+        }
+    }
 
 @OptIn(InternalSuspendTransformConfigurationApi::class)
 private fun nullmarkModeTransformer(

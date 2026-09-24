@@ -3,8 +3,8 @@
 package love.forte.plugin.suspendtrans.runners;
 
 import com.intellij.testFramework.TestDataPath;
-import org.jetbrains.kotlin.test.TestMetadata;
 import org.jetbrains.kotlin.test.util.KtTestUtil;
+import org.jetbrains.kotlin.test.TestMetadata;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -15,6 +15,16 @@ import java.util.regex.Pattern;
 @TestMetadata("src/testData/codegen")
 @TestDataPath("$PROJECT_ROOT")
 public class CodeGenTestRunnerGenerated extends AbstractCodeGenTestRunner {
+  private void run(String fileName) {
+    runTest("src/testData/codegen/" + fileName);
+  }
+
+  @Test
+  @TestMetadata("alias.kt")
+  public void testAlias() {
+    run("alias.kt");
+  }
+
   @Test
   public void testAllFilesPresentInCodegen() {
     KtTestUtil.assertAllTestsPresentByMetadataWithExcluded(this.getClass(), new File("src/testData/codegen"), Pattern.compile("^(.+)\\.kt$"), null, true);
@@ -23,84 +33,78 @@ public class CodeGenTestRunnerGenerated extends AbstractCodeGenTestRunner {
   @Test
   @TestMetadata("asProperty.kt")
   public void testAsProperty() {
-    runTest("src/testData/codegen/asProperty.kt");
+    run("asProperty.kt");
   }
 
   @Test
   @TestMetadata("basic.kt")
   public void testBasic() {
-    runTest("src/testData/codegen/basic.kt");
-  }
-
-  @Test
-  @TestMetadata("override.kt")
-  public void testOverride() {
-    runTest("src/testData/codegen/override.kt");
-  }
-
-  @Test
-  @TestMetadata("typeAttr.kt")
-  public void testTypeAttr() {
-    runTest("src/testData/codegen/typeAttr.kt");
-  }
-
-  @Test
-  @TestMetadata("typeAttrNested.kt")
-  public void testTypeAttrNested() {
-    runTest("src/testData/codegen/typeAttrNested.kt");
-  }
-
-  @Test
-  @TestMetadata("opt.kt")
-  public void testOpt() {
-    runTest("src/testData/codegen/opt.kt");
+    run("basic.kt");
   }
 
   @Test
   @TestMetadata("implOverriden.kt")
   public void testImplOverriden() {
-    runTest("src/testData/codegen/implOverriden.kt");
+    run("implOverriden.kt");
   }
 
   @Test
   @TestMetadata("implOverridenGeneric.kt")
   public void testImplOverridenGeneric() {
-    runTest("src/testData/codegen/implOverridenGeneric.kt");
-  }
-
-  @Test
-  @TestMetadata("alias.kt")
-  public void testAlias() {
-    runTest("src/testData/codegen/alias.kt");
-  }
-
-  @Test
-  @TestMetadata("varargParam.kt")
-  public void testVarargParam() {
-    runTest("src/testData/codegen/varargParam.kt");
-  }
-
-  @Test
-  @TestMetadata("markName.kt")
-  public void testMarkName() {
-    runTest("src/testData/codegen/markName.kt");
-  }
-
-  @Test
-  @TestMetadata("nullmarkMode.kt")
-  public void testNullmarkMode() {
-    runTest("src/testData/codegen/nullmarkMode.kt");
-  }
-
-  @Test
-  @TestMetadata("nullmarkModeWhere.kt")
-  public void testNullmarkModeWhere() {
-    runTest("src/testData/codegen/nullmarkModeWhere.kt");
+    run("implOverridenGeneric.kt");
   }
 
   @Test
   @TestMetadata("jvmReactive.kt")
   public void testJvmReactive() {
-    runTest("src/testData/codegen/jvmReactive.kt");
+    run("jvmReactive.kt");
+  }
+
+  @Test
+  @TestMetadata("markName.kt")
+  public void testMarkName() {
+    run("markName.kt");
+  }
+
+  @Test
+  @TestMetadata("nullmarkMode.kt")
+  public void testNullmarkMode() {
+    run("nullmarkMode.kt");
+  }
+
+  @Test
+  @TestMetadata("nullmarkModeWhere.kt")
+  public void testNullmarkModeWhere() {
+    run("nullmarkModeWhere.kt");
+  }
+
+  @Test
+  @TestMetadata("opt.kt")
+  public void testOpt() {
+    run("opt.kt");
+  }
+
+  @Test
+  @TestMetadata("override.kt")
+  public void testOverride() {
+    run("override.kt");
+  }
+
+  @Test
+  @TestMetadata("typeAttr.kt")
+  public void testTypeAttr() {
+    run("typeAttr.kt");
+  }
+
+  @Test
+  @TestMetadata("typeAttrNested.kt")
+  public void testTypeAttrNested() {
+    run("typeAttrNested.kt");
+  }
+
+  @Test
+  @TestMetadata("varargParam.kt")
+  public void testVarargParam() {
+    run("varargParam.kt");
   }
 }

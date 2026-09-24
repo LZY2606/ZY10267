@@ -103,6 +103,14 @@ tasks.register<JavaExec>("generateTest") {
 // add following properties for test
 tasks.test {
     useJUnitPlatform()
+    // Test oracles live in testData; changes to them must invalidate the test task.
+    inputs.dir("src/testData")
+    inputs.dir("src/test-gen")
+    // Forward the kotlin test-framework "update test data" flag to the test worker so
+    // golden files and diagnostic markers can be regenerated on demand.
+    System.getProperty("kotlin.test.update.test.data")?.let {
+        systemProperty("kotlin.test.update.test.data", it)
+    }
     doFirst {
         setLibraryProperty("org.jetbrains.kotlin.test.kotlin-stdlib", "kotlin-stdlib")
         setLibraryProperty("org.jetbrains.kotlin.test.kotlin-stdlib-jdk8", "kotlin-stdlib-jdk8")
