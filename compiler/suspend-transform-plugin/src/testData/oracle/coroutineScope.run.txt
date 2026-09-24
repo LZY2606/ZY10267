@@ -1,0 +1,2 @@
+ScopeRunner#pingAsync() -> pong
+ScopeRunner#pingBlocking() -> pong

@@ -1,0 +1,3 @@
+Derived#tokenAsync() -> Derived.derived
+Derived#tokenBlocking() -> Derived.derived
+Mid#tokenBlocking() -> Mid.mid

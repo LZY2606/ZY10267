@@ -103,6 +103,10 @@ tasks.register<JavaExec>("generateTest") {
 // add following properties for test
 tasks.test {
     useJUnitPlatform()
+    // Forward the oracle golden-update switch into the test JVM when present.
+    providers.systemProperty("suspendtrans.oracle.updateGoldens").orNull?.let {
+        systemProperty("suspendtrans.oracle.updateGoldens", it)
+    }
     doFirst {
         setLibraryProperty("org.jetbrains.kotlin.test.kotlin-stdlib", "kotlin-stdlib")
         setLibraryProperty("org.jetbrains.kotlin.test.kotlin-stdlib-jdk8", "kotlin-stdlib-jdk8")

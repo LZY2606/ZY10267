@@ -1,0 +1,4 @@
+CustomGreeter#greetAsync() -> CustomGreeter.override
+CustomGreeter#greetBlocking() -> CustomGreeter.override
+EnglishGreeter#greetAsync() -> Greeting.default
+EnglishGreeter#greetBlocking() -> Greeting.default

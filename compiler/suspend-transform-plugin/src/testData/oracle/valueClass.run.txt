@@ -1,0 +1,2 @@
+TokenBox#tokenAsync() -> Token(raw=token-42)
+TokenBox#tokenBlocking-BtjUYRY() -> token-42

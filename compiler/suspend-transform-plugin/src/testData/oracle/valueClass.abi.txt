@@ -1,0 +1,6 @@
+class TokenBox
+  metadata k=1 mv=[2, 4, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public final java.lang.String tokenBlocking-BtjUYRY()
+  fun public final java.util.concurrent.CompletableFuture tokenAsync()
+  fun public final synthetic java.lang.Object token-W5E3PKY(kotlin.coroutines.Continuation)

@@ -1,0 +1,17 @@
+class CustomGreeter
+  metadata k=1 mv=[2, 0, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public bridge java.lang.String greetBlocking()
+  fun public bridge java.util.concurrent.CompletableFuture greetAsync()
+  fun public java.lang.Object greet(kotlin.coroutines.Continuation)
+class EnglishGreeter
+  metadata k=1 mv=[2, 0, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public bridge java.lang.String greetBlocking()
+  fun public bridge java.util.concurrent.CompletableFuture greetAsync()
+  fun public bridge synthetic java.lang.Object greet(kotlin.coroutines.Continuation)
+class Greeting
+  metadata k=1 mv=[2, 0, 0] bv=[1, 0, 3] xi=48
+  fun public abstract java.lang.String greetBlocking()
+  fun public abstract java.util.concurrent.CompletableFuture greetAsync()
+  fun public abstract synthetic java.lang.Object greet(kotlin.coroutines.Continuation)

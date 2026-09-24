@@ -1,0 +1,8 @@
+class Config
+  metadata k=1 mv=[2, 2, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public final java.lang.String getNameBlocking()
+  fun public final java.util.concurrent.CompletableFuture getNameAsync()
+  fun public final synthetic java.lang.Object name(kotlin.coroutines.Continuation)
+  fun public static synthetic void getNameAsync$annotations()
+  fun public static synthetic void getNameBlocking$annotations()

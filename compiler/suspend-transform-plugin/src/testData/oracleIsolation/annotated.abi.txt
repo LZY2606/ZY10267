@@ -1,0 +1,5 @@
+class StaleProbe
+  metadata k=1 mv=[2, 4, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public final java.lang.String fooBlocking()
+  fun public final synthetic java.lang.Object foo(kotlin.coroutines.Continuation)

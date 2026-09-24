@@ -1,0 +1,10 @@
+class Derived
+  metadata k=1 mv=[2, 1, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public java.lang.Object token(kotlin.coroutines.Continuation)
+class Mid
+  metadata k=1 mv=[2, 1, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public bridge java.lang.String tokenBlocking()
+  fun public bridge java.util.concurrent.CompletableFuture tokenAsync()
+  fun public java.lang.Object token(kotlin.coroutines.Continuation)

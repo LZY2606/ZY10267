@@ -1,0 +1,12 @@
+class Box
+  metadata k=1 mv=[2, 2, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  ctor public <init>(java.lang.Object)
+  fun public final int sizeBlocking()
+  fun public final java.lang.Object getValue()
+  fun public final synthetic java.lang.Object size(kotlin.coroutines.Continuation)
+class Shouter
+  metadata k=1 mv=[2, 2, 0] bv=[1, 0, 3] xi=48
+  ctor public <init>()
+  fun public final java.lang.String shoutBlocking(java.lang.String)
+  fun public final synthetic java.lang.Object shout(java.lang.String, kotlin.coroutines.Continuation)

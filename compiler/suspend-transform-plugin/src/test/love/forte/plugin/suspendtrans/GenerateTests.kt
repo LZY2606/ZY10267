@@ -1,15 +1,20 @@
 package love.forte.plugin.suspendtrans
+import love.forte.plugin.suspendtrans.oracle.AbstractOracleTestRunner
 import love.forte.plugin.suspendtrans.runners.AbstractCodeGenTestRunner
 import org.jetbrains.kotlin.generators.dsl.junit5.generateTestGroupSuiteWithJUnit5
-
-private const val PROJECT_ROOT = "compiler/suspend-transform-plugin"
 
 fun main() {
     println("generating test class...")
     generateTestGroupSuiteWithJUnit5 {
-        testGroup(testsRoot = "$PROJECT_ROOT/src/test-gen", testDataRoot = "$PROJECT_ROOT/src/testData") {
+        // Paths are relative to the module project directory, which is the
+        // working directory of both the `generateTest` and `test` tasks.
+        testGroup(testsRoot = "src/test-gen", testDataRoot = "src/testData") {
             testClass<AbstractCodeGenTestRunner> {
                 model(relativeRootPath = "codegen")
+            }
+
+            testClass<AbstractOracleTestRunner> {
+                model(relativeRootPath = "oracle")
             }
 
         }

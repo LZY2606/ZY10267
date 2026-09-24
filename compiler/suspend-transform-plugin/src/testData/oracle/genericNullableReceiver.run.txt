@@ -1,0 +1,3 @@
+Box#sizeBlocking() -> -1
+Shouter#shoutBlocking('hey') -> HEY
+Shouter#shoutBlocking(null) -> null-receiver
